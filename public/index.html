@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Flowbot Lite - AI Business Ops Agent</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #0f172a;
+      color: white;
+      margin: 0;
+      padding: 20px;
+    }
+    h1 {
+      margin-bottom: 10px;
+    }
+    textarea {
+      width: 100%;
+      height: 150px;
+      padding: 10px;
+      margin-top: 10px;
+      border-radius: 8px;
+      border: none;
+    }
+    button {
+      margin-top: 15px;
+      padding: 12px 20px;
+      background: #22c55e;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+    .output {
+      margin-top: 20px;
+      padding: 15px;
+      background: #1e293b;
+      border-radius: 10px;
+    }
+    .section {
+      margin-bottom: 15px;
+    }
+    .loading {
+      margin-top: 10px;
+      color: #94a3b8;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Flowbot Lite</h1>
+  <p>AI Business Operations Agent</p>
+
+  <!-- Optional Upgrade: Summary display -->
+  <h3 id="summary-header" style="display:none;">Summary</h3>
+  <p id="summary" style="display:none;"></p>
+
+  <textarea id="input" placeholder="Paste messy business input here..."></textarea>
+
+  <button onclick="runAgent()">Run Agent</button>
+
+  <div class="loading" id="loading"></div>
+
+  <div class="output" id="output" style="display:none;">
+    <div class="section">
+      <h3>Top Priorities</h3>
+      <ul id="tasks"></ul>
+    </div>
+
+    <div class="section">
+      <h3>Recommended Actions</h3>
+      <ul id="actions"></ul>
+    </div>
+
+    <div class="section">
+      <h3>Draft Messages</h3>
+      <div id="messages"></div>
+    </div>
+  </div>
+
+  <script>
+    async function runAgent() {
+      const input = document.getElementById("input").value;
+      const loading = document.getElementById("loading");
+      const outputDiv = document.getElementById("output");
+      const summaryHeader = document.getElementById("summary-header");
+      const summary = document.getElementById("summary");
+
+      loading.innerText = "Running agent...";
+      outputDiv.style.display = "none";
+      summary.style.display = "none";
+      summaryHeader.style.display = "none";
+
+      try {
+        const response = await fetch("http://localhost:3001/run-agent", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ input }),
+        });
+
+        const data = await response.json();
+
+        let result = data.result;
+
+        // Clean response (handles Kimi quirks)
+        result = result.replace(/```json/g, "").replace(/```/g, "").trim();
+
+        const parsed = JSON.parse(result);
+
+        displayResults(parsed);
+
+        loading.innerText = "";
+        outputDiv.style.display = "block";
+
+        // Optional Upgrade: Display Summary
+        if (parsed.summary) {
+          summary.innerText = parsed.summary;
+          summary.style.display = "block";
+          summaryHeader.style.display = "block";
+        }
+
+      } catch (error) {
+        console.error(error);
+        loading.innerText = "Error running agent";
+      }
+    }
+
+    function displayResults(data) {
+      const tasks = document.getElementById("tasks");
+      const actions = document.getElementById("actions");
+      const messages = document.getElementById("messages");
+
+      tasks.innerHTML = "";
+      actions.innerHTML = "";
+      messages.innerHTML = "";
+
+      // Only display the Top 3 prioritized tasks
+      (data.prioritized_tasks || []).slice(0,3).forEach(task => {
+        const li = document.createElement("li");
+        li.innerText = task;
+        tasks.appendChild(li);
+      });
+
+      (data.recommended_actions || []).forEach(action => {
+        const li = document.createElement("li");
+        li.innerText = action;
+        actions.appendChild(li);
+      });
+
+      (data.draft_messages || []).forEach(msg => {
+        const p = document.createElement("p");
+        p.innerText = msg;
+        messages.appendChild(p);
+      });
+    }
+  </script>
+
+</body>
+</html>
