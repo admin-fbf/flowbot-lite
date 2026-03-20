@@ -148,23 +148,53 @@ Analyzes business input and returns structured output.
 
 ---
 
-## Why Kimi?
+## AI Provider
 
-Flowbot Lite uses [Moonshot AI's Kimi](https://platform.moonshot.cn/) model because:
+Flowbot Lite ships with [Moonshot AI's Kimi](https://platform.moonshot.cn/) as the default, but **you can use any OpenAI-compatible provider**.
+
+### Default: Kimi
 
 - Excellent at structured JSON output
-- Cost-effective for MVP/hackathon projects
+- Cost-effective for MVP projects
 - Strong performance on business/reasoning tasks
-- OpenAI-compatible API (easy migration path)
 
-To use a different provider, modify `server.js`:
+### Using a Different Provider
 
+Swap to OpenAI, Anthropic, Groq, Together AI, or any OpenAI-compatible API by editing `server.js`:
+
+**OpenAI:**
 ```javascript
 const openai = new OpenAI({
-  apiKey: process.env.YOUR_API_KEY,
-  baseURL: "https://api.your-provider.com/v1",
+  apiKey: process.env.OPENAI_API_KEY,
+  // No baseURL needed - defaults to OpenAI
 });
 ```
+
+**Anthropic (via OpenAI-compatible proxy):**
+```javascript
+const openai = new OpenAI({
+  apiKey: process.env.ANTHROPIC_API_KEY,
+  baseURL: "https://api.anthropic.com/v1",
+});
+```
+
+**Groq (fast inference):**
+```javascript
+const openai = new OpenAI({
+  apiKey: process.env.GROQ_API_KEY,
+  baseURL: "https://api.groq.com/openai/v1",
+});
+```
+
+**Local models (Ollama):**
+```javascript
+const openai = new OpenAI({
+  apiKey: "ollama",  // Not used but required
+  baseURL: "http://localhost:11434/v1",
+});
+```
+
+Just update the model name in the `chat.completions.create()` call to match your provider.
 
 ---
 
@@ -175,6 +205,7 @@ const openai = new OpenAI({
 - [ ] Calendar integration (Google Calendar, Outlook)
 - [ ] Email integration (Gmail, Outlook)
 - [ ] CRM sync (HubSpot, Salesforce)
+- [ ] **WhatsApp integration** - Chat with your agent via WhatsApp, with full conversation history and context. No app to download, works on any device you already use.
 - [ ] Mobile app
 
 ---
