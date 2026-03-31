@@ -40,6 +40,7 @@ Return ONLY valid JSON in this format:
 }
 
 Be decisive. Be specific. No fluff.
+Do not include markdown, backticks, or explanations. Only raw JSON.
 
 Input:
 ${input}
